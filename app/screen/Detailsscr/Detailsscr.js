@@ -1,13 +1,13 @@
-import { StyleSheet, Text, View, TextInput, Pressable } from 'react-native';
-import React, { useState } from 'react';
+import {StyleSheet, Text, View, TextInput, Pressable} from 'react-native';
+import React, {useState} from 'react';
 import color from '../../common/color/color';
 import Labelcom from '../../common/label/label';
 import Inputcom from '../../common/inputcom/inputcom';
-import { Formik } from 'formik';
+import {Formik} from 'formik';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const Detailsscr = ({ navigation }) => {
-  const saveNotes = async (newNotes) => {
+const Detailsscr = ({navigation}) => {
+  const saveNotes = async newNotes => {
     try {
       // Load existing notes from AsyncStorage
       const existingNotes = await AsyncStorage.getItem('notes');
@@ -20,23 +20,23 @@ const Detailsscr = ({ navigation }) => {
       await AsyncStorage.setItem('notes', JSON.stringify(notesArray));
 
       console.log(newNotes, 'saved');
-      navigation.navigate('Frontscr',  { screen: 'Frontscr', params: { inputvalue:{newNotes:newNotes} } });
+      navigation.navigate('Frontscr', {inputvalue: newNotes});
     } catch (error) {
       console.error('Error saving notes:', error);
     }
   };
 
   return (
-    <View style={{ backgroundColor: color.WHITE, flex: 1 }}>
-      <View style={styles.header}>
-        <Text style={styles.headertext}>Take notes</Text>
+    <View style={{backgroundColor: color.WHITE, flex: 1}}>
+      <View style={styles.modelheader}>
+        <Text style={styles.modelheadertext}>Take notes</Text>
       </View>
       <Formik
         initialValues={{
           Title: '',
           Description: '',
         }}
-        validate={(values) => {
+        validate={values => {
           const errors = {};
           if (!values.Title) {
             errors.Title = 'Required Title';
@@ -46,7 +46,7 @@ const Detailsscr = ({ navigation }) => {
           }
           return errors;
         }}
-        onSubmit={(values, { errors }) => {
+        onSubmit={(values, {errors}) => {
           setTimeout(() => {
             const errorObject = errors ?? {};
             const length = Object.keys(errorObject).length;
@@ -54,11 +54,10 @@ const Detailsscr = ({ navigation }) => {
               saveNotes(values);
             }
           }, 400);
-        }}
-      >
-        {({ values, errors, handleChange, handleSubmit }) => (
-          <View style={styles.container}>
-            <View style={{ gap: 10, width: '80%' }}>
+        }}>
+        {({values, errors, handleChange, handleSubmit}) => (
+          <View style={styles.modelcontainer}>
+            <View style={{gap: 10, width: '80%'}}>
               <Labelcom title="Title" />
               <Inputcom
                 placeholder=" Enter a Title"
@@ -67,16 +66,15 @@ const Detailsscr = ({ navigation }) => {
                 error={errors.Title}
               />
             </View>
-            <View style={{ gap: 10, width: '80%' }}>
+            <View style={{gap: 10, width: '80%'}}>
               <Labelcom title="Description" />
               <View
                 style={[
-                  styles.inputcontainer,
-                  errors.Description && styles.errorsinputcontainer,
-                ]}
-              >
+                  styles.modelinputcontainer,
+                  errors.Description && styles.errorsmodelinputcontainer,
+                ]}>
                 <TextInput
-                  style={styles.inputtext}
+                  style={styles.modelinputtext}
                   multiline
                   numberOfLines={5}
                   placeholder="Enter your Description"
@@ -85,14 +83,20 @@ const Detailsscr = ({ navigation }) => {
                 />
               </View>
               {errors ? (
-                <Text style={{ marginTop: 0, marginLeft: 20, color: 'red', fontSize: 15 }}>
+                <Text
+                  style={{
+                    marginTop: 0,
+                    marginLeft: 20,
+                    color: 'red',
+                    fontSize: 15,
+                  }}>
                   {errors.Description}
                 </Text>
               ) : null}
             </View>
 
-            <Pressable style={styles.btncontainer} onPress={handleSubmit}>
-              <Text style={styles.btntext}>SAVE</Text>
+            <Pressable style={styles.modelbtncontainer} onPress={handleSubmit}>
+              <Text style={styles.modelbtntext}>SAVE</Text>
             </Pressable>
           </View>
         )}
@@ -104,7 +108,7 @@ const Detailsscr = ({ navigation }) => {
 export default Detailsscr;
 
 const styles = StyleSheet.create({
-  header: {
+  modelheader: {
     width: '100%',
     height: '10%',
     backgroundColor: color.PRIMARY,
@@ -113,25 +117,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  container: {
+  modelcontainer: {
     marginVertical: 20,
     gap: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  headertext: {
+  modelheadertext: {
     color: color.WHITE,
     fontSize: 30,
   },
-  inputcontainer: {
+  modelinputcontainer: {
     borderWidth: 1,
     borderRadius: 10,
     borderColor: color.LIGHT,
   },
-  inputtext: {
+  modelinputtext: {
     paddingHorizontal: 5,
   },
-  btncontainer: {
+  modelbtncontainer: {
     width: '80%',
     height: '15%',
     justifyContent: 'center',
@@ -139,12 +143,12 @@ const styles = StyleSheet.create({
     backgroundColor: color.PRIMARY,
     borderRadius: 5,
   },
-  btntext: {
+  modelbtntext: {
     fontSize: 20,
     fontWeight: '400',
     color: color.WHITE,
   },
-  errorsinputcontainer: {
+  errorsmodelinputcontainer: {
     borderWidth: 1,
     borderRadius: 10,
     borderColor: color.ERROR,

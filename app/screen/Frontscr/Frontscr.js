@@ -15,13 +15,15 @@ import {Formik} from 'formik';
 import Labelcom from '../../common/label/label';
 import Inputcom from '../../common/inputcom/inputcom';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import Delete from '../../Assets/svg/delete-svgrepo-com.svg';
+import Edit from '../../Assets/svg/edit-file-svgrepo-com.svg';
 const Frontscr = ({route}) => {
   const {input} = route?.params || {};
   // const { inputvalue } = route?.params || {};
   const [notes, setnotes] = useState([]);
   // ====================model================
   const [modalVisible, setModalVisible] = useState({show: false, type: ''});
+  const [readmodel,setreadmodel] = useState(false);
   
   const [index, setindex] = useState(0);
 
@@ -98,6 +100,7 @@ const Frontscr = ({route}) => {
         console.log(dataArray, 'saved');
         loadNotes();
         setModalVisible({show: false, type: ''});
+        setreadmodel(false)
       } else {
         console.error('Invalid index for deleting data:', index);
       }
@@ -113,10 +116,71 @@ const Frontscr = ({route}) => {
     setModalVisible({show: true, type: 'update'});
     setindex(index);
   };
+  const showmodel = index =>{
+    setreadmodel(true);
+    setindex(index);
+  }
 
   return (
     <View style={{backgroundColor: color.WHITE, flex: 1}}>
-     
+      <Modal
+        animationType="slide"
+        transparent={false}
+        visible={readmodel}
+        onRequestClose={() => {
+          Alert.alert('Modal has been closed.');
+          setreadmodel(false);
+        }}>
+        <View style={{backgroundColor: color.WHITE, flex: 1}}>
+          <View style={styles.modelheader}>
+            <Pressable
+              onPress={() => setreadmodel(false)}
+              style={{marginRight: 20}}>
+              <Image source={require('../../Assets/png/back.png')} />
+            </Pressable>
+
+            <Text style={styles.modelheadertext}>Take notes</Text>
+
+            <Pressable
+              onPress={() => editmodel(index)}
+              style={{
+                marginLeft: 40,
+                paddingLeft: 2,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Edit width={35} height={30} fill="white" />
+            </Pressable>
+            <Pressable
+              onPress={() => deleteData(index)}
+              style={{
+                marginLeft: 20,
+                paddingLeft: 2,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Delete width={30} height={25} />
+            </Pressable>
+          </View>
+          <ScrollView>
+          <View style={styles.readmodelcontainer}>
+            <View style={{gap:15}}>
+              <View>
+                <Text style={styles.readmodeltitle}>Title :</Text>
+              </View>
+              <Text style={styles.readmodeltext}>{notes[index]?.Title ?notes[index].Title:null}</Text>
+            </View>
+            <View style={{gap:15}}>
+              <View>
+                <Text style={styles.readmodeltitle}>Description :</Text>
+              </View>
+              <Text style={styles.readmodeltext}>{notes[index]?.Description}</Text>
+            </View>
+          </View>
+          </ScrollView>
+        </View>
+      </Modal>
+
       <Modal
         animationType="slide"
         transparent={false}
@@ -126,26 +190,38 @@ const Frontscr = ({route}) => {
           setModalVisible({show: false, type: ''});
         }}>
         <View style={{backgroundColor: color.WHITE, flex: 1}}>
-         
           <View style={styles.modelheader}>
-            <Pressable onPress={()=> setModalVisible({show: false, type: ''})} style={{marginRight:modalVisible.type==="update"?20:60,marginLeft:modalVisible.type==="update"?0:-70}}> 
-            <Image source={require('../../Assets/png/back.png')}/>
+            <Pressable
+              onPress={() => setModalVisible({show: false, type: ''})}
+              style={{
+                marginRight: modalVisible.type === 'update' ? 20 : 60,
+                marginLeft: modalVisible.type === 'update' ? 0 : -70,
+              }}>
+              <Image source={require('../../Assets/png/back.png')} />
             </Pressable>
-         
+
             <Text style={styles.modelheadertext}>Take notes</Text>
 
-            {modalVisible.type==="update" ? <Pressable onPress={()=>deleteData(index)} style={{marginLeft:70,width:70,height:40,backgroundColor:"red",borderRadius:10,paddingLeft:2,alignItems:"center",justifyContent:"center"}}> 
-             <Text style={{color:color.WHITE,fontSize:20}}>Delete</Text>
-            </Pressable>:null}
-
+            {modalVisible.type === 'update' ? (
+              <Pressable
+                onPress={() => deleteData(index)}
+                style={{
+                  marginLeft: 70,
+                  paddingLeft: 2,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                <Delete width={30} height={25} />
+              </Pressable>
+            ) : null}
           </View>
           <ScrollView>
             <Formik
               initialValues={{
-                Title: modalVisible.type === 'update' ? notes[index].Title : '',
+                Title: modalVisible.type === 'update' ? notes[index]?.Title : '',
                 Description:
                   modalVisible.type === 'update'
-                    ? notes[index].Description
+                    ? notes[index]?.Description
                     : '',
               }}
               validate={values => {
@@ -163,7 +239,11 @@ const Frontscr = ({route}) => {
                   const errorObject = errors ?? {};
                   const length = Object.keys(errorObject).length;
                   if (length === 0) {
-                    {modalVisible.type === 'create' ?  saveNotes(values):updateData(index,values) }
+                    {
+                      modalVisible.type === 'create'
+                        ? saveNotes(values)
+                        : updateData(index, values);
+                    }
                   }
                 }, 400);
               }}>
@@ -246,22 +326,32 @@ const Frontscr = ({route}) => {
 
               {notes.map((data, index) => (
                 <View style={styles.mapcontainer} key={index}>
-                  <Pressable
+                  
+                   
+                  <View
                     style={styles.map}
-                    onPress={() => editmodel(index)}>
-                    <Text style={styles.maptext}>{data.Title}</Text>
+                    // onPress={() => editmodel(index)}>
+                    >
+                      <View style={styles.mapinner}>
+                        <Pressable onPress={() => showmodel(index)}>
+                        <Text style={styles.maptext}>{data.Title}</Text>
+                        </Pressable>
+                    <Pressable onPress={()=>editmodel(index)}>
+                  <Edit width={35} height={30} fill="white" />
+                  </Pressable>
+                  </View>
                     <View style={styles.Descriptiontextcontainer}>
                       <Text style={styles.Descriptiontext}>
                         {data.Description}
                       </Text>
                     </View>
-                  </Pressable>
+                  </View>
                 </View>
               ))}
             </View>
           ) : (
             <View style={styles.innercontainer}>
-            <Pressable
+              <Pressable
                 onPress={() => setModalVisible({show: true, type: 'create'})}
                 style={styles.createcontainer}>
                 <Image
@@ -269,7 +359,7 @@ const Frontscr = ({route}) => {
                   style={{width: 100, height: 100}}
                 />
               </Pressable>
-            <Text>No notes available</Text>
+              <Text>No notes available</Text>
             </View>
           )}
         </ScrollView>
@@ -328,6 +418,17 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     flex: 1,
   },
+  mapinner:{
+    justifyContent:"space-between",
+    borderWidth: 1,
+    borderColor: color.LIGHT,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    flex: 1,
+    flexDirection:"row"
+
+  },
 
   mapcontainer: {
     width: '49%',
@@ -352,7 +453,7 @@ const styles = StyleSheet.create({
   },
   maptext: {
     fontSize: 20,
-    textAlign: 'center',
+    // textAlign: 'center',
     textTransform: 'capitalize',
     fontWeight: '500',
     color: color.PRIMARY,
@@ -400,7 +501,7 @@ const styles = StyleSheet.create({
   },
   modelbtncontainer: {
     width: '80%',
-    height: '15%',
+    height: 50,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: color.PRIMARY,
@@ -416,4 +517,21 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderColor: color.ERROR,
   },
+  // ===============readmodel
+  readmodelcontainer:{
+    marginHorizontal:20,
+    marginVertical:20,
+    gap:20
+  },
+  readmodeltext:{
+    fontSize:20,
+    color:color.TEXT,
+    fontWeight:"400"
+  },
+  readmodeltitle:{
+    fontSize:20,
+    color:color.PRIMARY,
+    fontWeight:"600"
+
+  }
 });
